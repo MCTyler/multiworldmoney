@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 
 public class WorldChangeListener implements Listener {
-    private MultiWorldMoney plugin;
+    private final MultiWorldMoney plugin;
 
 
     /**

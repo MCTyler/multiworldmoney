@@ -26,7 +26,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Lists;
 
-public class Metrics {
+public final class Metrics {
     private static String encode(final String text) throws UnsupportedEncodingException {
 	return URLEncoder.encode(text, "UTF-8");
     }
@@ -56,9 +56,9 @@ public class Metrics {
 	configurationFile = getConfigFile();
 	configuration = YamlConfiguration.loadConfiguration(configurationFile);
 
-	configuration.addDefault("opt-out", Boolean.valueOf(false));
+	configuration.addDefault("opt-out", false);
 	configuration.addDefault("guid", UUID.randomUUID().toString());
-	configuration.addDefault("debug", Boolean.valueOf(false));
+	configuration.addDefault("debug", false);
 
 	if (configuration.get("guid", null) == null) {
 	    configuration.options().header("http://mcstats.org").copyDefaults(true);
@@ -72,7 +72,7 @@ public class Metrics {
     public void disable() throws IOException {
 	synchronized (optOutLock) {
 	    if (!isOptOut()) {
-		configuration.set("opt-out", Boolean.valueOf(true));
+		configuration.set("opt-out", true);
 		configuration.save(configurationFile);
 	    }
 
@@ -86,7 +86,7 @@ public class Metrics {
     public void enable() throws IOException {
 	synchronized (optOutLock) {
 	    if (isOptOut()) {
-		configuration.set("opt-out", Boolean.valueOf(false));
+		configuration.set("opt-out", false);
 		configuration.save(configurationFile);
 	    }
 
@@ -115,14 +115,9 @@ public class Metrics {
 	synchronized (optOutLock) {
 	    try {
 		configuration.load(getConfigFile());
-	    } catch (final IOException ex) {
+	    } catch (final IOException | InvalidConfigurationException ex) {
 		if (debug) {
-		    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
-		}
-		return true;
-	    } catch (final InvalidConfigurationException ex) {
-		if (debug) {
-		    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
+		    Bukkit.getLogger().log(Level.INFO, "[Metrics] {0}", ex.getMessage());
 		}
 		return true;
 	    }
@@ -177,14 +172,14 @@ public class Metrics {
 
 	connection.setDoOutput(true);
 
-	final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-	writer.write(data.toString());
-	writer.flush();
-
-	final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-	final String response = reader.readLine();
-
-	writer.close();
+	final BufferedReader reader;
+	final String response;
+        try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())) {
+            writer.write(data.toString());
+            writer.flush();
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            response = reader.readLine();
+        }
 	reader.close();
 
 	if (response == null || response.startsWith("ERR")) {
@@ -213,6 +208,7 @@ public class Metrics {
 	    task = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
 		private boolean firstPost = true;
 
+                @Override
 		public void run() {
 		    try {
 			synchronized (optOutLock) {
@@ -228,7 +224,7 @@ public class Metrics {
 			firstPost = false;
 		    } catch (final IOException e) {
 			if (debug) {
-			    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + e.getMessage());
+			    Bukkit.getLogger().log(Level.INFO, "[Metrics] {0}", e.getMessage());
 			}
 		    }
 		}

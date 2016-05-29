@@ -5,26 +5,28 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-public class Players {
+public final class Players {
     private UUID uuid;
     private String name;
-    private HashMap<String, Double> balances;
+    private final HashMap<String, Double> balances;
     private World logoffWorld;
-    private MultiWorldMoney plugin;
+    private final MultiWorldMoney plugin;
 
     /**
      * Loads a player
+     * @param plugin
      * @param player
      */
     public Players(MultiWorldMoney plugin, Player player) {
 	this.plugin = plugin;
-	balances = new HashMap<String, Double>();
+	balances = new HashMap<>();
 	name = "";
 	load(player);
     }
@@ -137,8 +139,7 @@ public class Players {
 	try {
 	    player.save(user);
 	} catch (IOException e) {
-	    plugin.getLogger().severe("Could not save player file: " + user.getAbsolutePath());
-	    e.printStackTrace();
+	    plugin.getLogger().log(Level.SEVERE, "Could not save player file: {0}", user.getAbsolutePath());
 	}
     }
 
@@ -174,14 +175,7 @@ public class Players {
 		    }
 		}
 	    } catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (InvalidConfigurationException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	    } catch (IOException | InvalidConfigurationException e) {
 	    }
 	}
 

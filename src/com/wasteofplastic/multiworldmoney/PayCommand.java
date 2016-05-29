@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 public class PayCommand implements CommandExecutor {
 
-    private MultiWorldMoney plugin;
+    private final MultiWorldMoney plugin;
 
     /**
      * @param plugin
@@ -45,6 +45,7 @@ public class PayCommand implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + "Error: " + ChatColor.DARK_RED + "You cannot pay yourself.");
 			return true;
 		    }
+                @SuppressWarnings("UnusedAssignment")
 		double amount = 0;
 		// Check that the amount is a number
 		try {

@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 
 public class BalanceCommand implements CommandExecutor {
 
-    private MultiWorldMoney plugin;
+    private final MultiWorldMoney plugin;
 
     /**
      * @param plugin
@@ -131,15 +131,9 @@ public class BalanceCommand implements CommandExecutor {
 			}
 		    }
 		} catch (FileNotFoundException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-		} catch (IOException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-		} catch (InvalidConfigurationException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
+		} catch (IOException | InvalidConfigurationException e) {
 		}
+                // TODO Auto-generated catch block
 		sender.sendMessage("Total : " + VaultHelper.econ.format(total));
 		return true;
 	    } else {

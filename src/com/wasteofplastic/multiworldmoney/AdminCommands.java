@@ -16,7 +16,7 @@ import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 
 public class AdminCommands implements CommandExecutor {
 
-    private MultiWorldMoney plugin;
+    private final MultiWorldMoney plugin;
 
     /**
      * @param plugin
@@ -54,6 +54,7 @@ public class AdminCommands implements CommandExecutor {
 		return true;
 	    }
 	    // Check amount
+        @SuppressWarnings("UnusedAssignment")
 	    double amount = 0D;
 	    try {
 		amount = Double.valueOf(args[2]);

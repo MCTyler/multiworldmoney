@@ -23,17 +23,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
+import java.util.logging.Level;
 
 public class MultiWorldMoney extends JavaPlugin {
 
     private FileConfiguration config;
-    private HashMap<String,List<World>> worldGroups = new HashMap<String, List<World>>();
-    private HashMap<World,String> reverseWorldGroups = new HashMap<World, String>();
+    private final HashMap<String,List<World>> worldGroups = new HashMap<>();
+    private final HashMap<World,String> reverseWorldGroups = new HashMap<>();
     private PlayerCache players;
     private MultiverseCore core = null;
 
 
     @Override
+    @SuppressWarnings("null")
     public void onEnable() {
 	// Load cache
 	players = new PlayerCache(this);
@@ -65,7 +67,7 @@ public class MultiWorldMoney extends JavaPlugin {
 			    UUID uuid = UUID.fromString(uuidString);
 			    File convert = new File(playersFolder,uuid.toString() + ".yml");
 			    if (convert.exists()) {
-				getLogger().severe(uuid.toString() + ".yml exists already! Skipping import..."); 
+				getLogger().log(Level.SEVERE, "{0}.yml exists already! Skipping import...", uuid.toString()); 
 			    } else {
 				YamlConfiguration newPlayer = new YamlConfiguration();
 				String name = player.getString("playerinfo.name");
@@ -86,7 +88,7 @@ public class MultiWorldMoney extends JavaPlugin {
 					    // It's a recognized world
 					    newPlayer.set("balances." + world.getName(), roundDown(player.getDouble(key + ".money",0D), 2));
 					} else {
-					    getLogger().severe("Could not recognize world: " + key + ". Skipping...");
+					    getLogger().log(Level.SEVERE, "Could not recognize world: {0}. Skipping...", key);
 					}
 				    }
 				}
@@ -94,14 +96,13 @@ public class MultiWorldMoney extends JavaPlugin {
 				if (name != null && uuid != null) {
 				    players.addName(name, uuid);
 				}
-				getLogger().info("Converted " + name);
+				getLogger().log(Level.INFO, "Converted {0}", name);
 			    }
 			} else {
-			    getLogger().severe("Could not import " + playerFile.getName() + " - no known UUID. Skipping...");
+			    getLogger().log(Level.SEVERE, "Could not import {0} - no known UUID. Skipping...", playerFile.getName());
 			}
-		    } catch (Exception e) {
-			getLogger().severe("Could not import " + playerFile.getName() + ". Skipping...");
-			e.printStackTrace();
+		    } catch (IOException | InvalidConfigurationException e) {
+			getLogger().log(Level.SEVERE, "Could not import {0}. Skipping...", playerFile.getName());
 		    }
 		}
 	    }
@@ -182,7 +183,7 @@ public class MultiWorldMoney extends JavaPlugin {
 	// Each key is a group name
 	for(String group : keys) {
 	    List<String> worlds = groups.getStringList(group);
-	    List<World> worldList = new ArrayList<World>();
+	    List<World> worldList = new ArrayList<>();
 	    for(String world : worlds) {
 		// Try to parse world into a known world
 		World importedWorld = getServer().getWorld(world);
@@ -192,7 +193,7 @@ public class MultiWorldMoney extends JavaPlugin {
 		    // Add immediately to the reverse hashmap
 		    reverseWorldGroups.put(importedWorld, group);
 		} else {
-		    getLogger().warning("Could not recognize world " + world + " in groups.yml. Skipping...");
+		    getLogger().log(Level.WARNING, "Could not recognize world {0} in groups.yml. Skipping...", world);
 		}
 	    }
 	    worldGroups.put(group,worldList);
@@ -207,17 +208,16 @@ public class MultiWorldMoney extends JavaPlugin {
     public YamlConfiguration loadYamlFile(String file) {
 	File dataFolder = getDataFolder();
 	File yamlFile = new File(dataFolder, file);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
 	YamlConfiguration config = new YamlConfiguration();
 	if(yamlFile.exists()) {
 	    try {
 		config.load(yamlFile);
 	    } catch (FileNotFoundException e) {
-		getLogger().severe("File not found: " + file);
+		getLogger().log(Level.SEVERE, "File not found: {0}", file);
 	    } catch (IOException e) {
-		e.printStackTrace();
 	    } catch (InvalidConfigurationException e) {
-		getLogger().severe("YAML file has errors: " + file);
-		e.printStackTrace();
+		getLogger().log(Level.SEVERE, "YAML file has errors: {0}", file);
 	    }
 	} else {
 	    // Try to make it from a built-in file
@@ -226,15 +226,13 @@ public class MultiWorldMoney extends JavaPlugin {
 		try {
 		    config.load(yamlFile);
 		} catch (FileNotFoundException e) {
-		    getLogger().severe("File not found: " + file);
+		    getLogger().log(Level.SEVERE, "File not found: {0}", file);
 		} catch (IOException e) {
-		    e.printStackTrace();
 		} catch (InvalidConfigurationException e) {
-		    getLogger().severe("YAML file has errors: " + file);
-		    e.printStackTrace();
+		    getLogger().log(Level.SEVERE, "YAML file has errors: {0}", file);
 		}
 	    } else {
-		getLogger().severe("File not found: " + file);
+		getLogger().log(Level.SEVERE, "File not found: {0}", file);
 	    }
 	}
 	return config;
@@ -249,7 +247,6 @@ public class MultiWorldMoney extends JavaPlugin {
 	try {
 	    yamlFile.save(file);
 	} catch(Exception e) {
-	    e.printStackTrace();
 	}
     }
 
@@ -264,7 +261,7 @@ public class MultiWorldMoney extends JavaPlugin {
 	if (reverseWorldGroups.containsKey(world)) {
 	    return worldGroups.get(reverseWorldGroups.get(world));
 	} else {
-	    List<World> result = new ArrayList<World>();
+	    List<World> result = new ArrayList<>();
 	    result.add(world);
 	    return result;
 	}
@@ -301,8 +298,6 @@ public class MultiWorldMoney extends JavaPlugin {
 	    try {
 		return core.getMVWorldManager().getMVWorld(world).getAlias();
 	    } catch (Exception e) {
-		// do nothing if it does not work
-		e.printStackTrace();
 	    }	    
 	}
 	//getLogger().info("DEBUG: core is null");

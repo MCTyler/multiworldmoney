@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -21,10 +22,10 @@ public class PlayerCache {
     public PlayerCache(MultiWorldMoney plugin) {
 	// Initialize
 	this.plugin = plugin;
-	this.cache = new HashMap<UUID, Players>();
-	this.names = new HashMap<String, UUID>();
-	this.lowerCaseNames = new HashMap<String, UUID>();
-	this.reverseNames = new HashMap<UUID, String>();
+	this.cache = new HashMap<>();
+	this.names = new HashMap<>();
+	this.lowerCaseNames = new HashMap<>();
+	this.reverseNames = new HashMap<>();
 	// Load the name file
 	File namesFile = new File(plugin.getDataFolder(), "names.yml");
 	YamlConfiguration nameConfig = new YamlConfiguration();
@@ -32,14 +33,9 @@ public class PlayerCache {
 	    try {
 		nameConfig.load(namesFile);
 	    } catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
 	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
 	    } catch (InvalidConfigurationException e) {
 		plugin.getLogger().severe("names.yml file is corrupt!");
-		e.printStackTrace();
 	    }
 	    // Transfer names into the names, lowercasenames and reverseNames hashmaps
 	    for (String key : nameConfig.getKeys(false)) {
@@ -51,7 +47,7 @@ public class PlayerCache {
 		    lowerCaseNames.put(nameConfig.getString(key).toLowerCase(),uuid);
 		    reverseNames.put(uuid, nameConfig.getString(key));
 		} catch (Exception e) {
-		    plugin.getLogger().severe("Could not load UUID " + key + " from names.yml. Skipping...");
+		    plugin.getLogger().log(Level.SEVERE, "Could not load UUID {0} from names.yml. Skipping...", key);
 		}
 	    }
 	}
@@ -84,7 +80,7 @@ public class PlayerCache {
 		// Name exists, but UUID did not exist in the reverseNames list.
 		// This means that a player is now taking over this name
 		// This person now owns this name. Well done! Best to give a small warning
-		plugin.getLogger().warning("New UUID [" + player.getUniqueId().toString() + "] has taken over name : " + player.getName());
+		plugin.getLogger().log(Level.WARNING, "New UUID [{0}] has taken over name : {1}", new Object[]{player.getUniqueId().toString(), player.getName()});
 	    }
 	    names.put(player.getName(), player.getUniqueId());
 	    lowerCaseNames.put(player.getName().toLowerCase(), player.getUniqueId());
@@ -113,7 +109,6 @@ public class PlayerCache {
 	    nameConfig.save(namesFile);
 	} catch (IOException e) {
 	    plugin.getLogger().severe("Could not save names.yml");
-	    e.printStackTrace();
 	}
     }
 
@@ -224,14 +219,7 @@ public class PlayerCache {
 	    try {
 		playerConfig.load(userFile);
 	    } catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (InvalidConfigurationException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	    } catch (IOException | InvalidConfigurationException e) {
 	    }
 	    String logOutworld = playerConfig.getString("logoffworld", "");
 	    // Get the last world. Could be null if it's not recognized
